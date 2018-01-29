@@ -128,26 +128,25 @@ WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Fiel
 
 WorldPacket const* WorldPackets::Character::EnumCharactersResult::Write()
 {
-    _worldPacket.reserve(9 + Characters.size() * sizeof(CharacterInfo) + FactionChangeRestrictions.size() * sizeof(RestrictedFactionChangeRuleInfo));
+    _worldPacket.reserve(4 + 4 + 4 + 4 + 1 +
+                         Characters.size() * sizeof(CharacterInfo) +
+                         enabledRacesInfo.size() * sizeof(EnabledRacesInfo)
+                         );
 
     _worldPacket.WriteBit(Success);
     _worldPacket.WriteBit(IsDeletedCharacters);
     _worldPacket.WriteBit(IsDemonHunterCreationAllowed);
     _worldPacket.WriteBit(HasDemonHunterOnRealm);
     _worldPacket.WriteBit(HasLevel70OnRealm);
-    _worldPacket.WriteBit(Unknown7x);
     _worldPacket.WriteBit(DisabledClassesMask.is_initialized());
+    _worldPacket.WriteBit(AlliedRacesEnabled);
+    
     _worldPacket << uint32(Characters.size());
-    _worldPacket << uint32(FactionChangeRestrictions.size());
-
+    _worldPacket << int32(0x00); // Unk 7.3.5
+    _worldPacket << uint32(34);
+    
     if (DisabledClassesMask)
         _worldPacket << uint32(*DisabledClassesMask);
-
-    for (RestrictedFactionChangeRuleInfo const& rule : FactionChangeRestrictions)
-    {
-        _worldPacket << int32(rule.Mask);
-        _worldPacket << uint8(rule.Race);
-    }
 
     for (CharacterInfo const& charInfo : Characters)
     {
@@ -187,6 +186,7 @@ WorldPacket const* WorldPackets::Character::EnumCharactersResult::Write()
         _worldPacket << uint32(charInfo.LastPlayedTime);
         _worldPacket << uint16(charInfo.SpecID);
         _worldPacket << uint32(charInfo.Unknown703);
+        _worldPacket << uint32(charInfo.Unknown735);
         _worldPacket << uint32(charInfo.Flags4);
         _worldPacket.WriteBits(charInfo.Name.length(), 6);
         _worldPacket.WriteBit(charInfo.FirstLogin);
@@ -195,6 +195,12 @@ WorldPacket const* WorldPackets::Character::EnumCharactersResult::Write()
         _worldPacket.FlushBits();
 
         _worldPacket.WriteString(charInfo.Name);
+    }
+    
+    for (int i = 0, j = 1; i < 34; i++, j++)
+    {
+        _worldPacket << int32(j);
+        _worldPacket << uint8(0xE0);
     }
 
     return &_worldPacket;

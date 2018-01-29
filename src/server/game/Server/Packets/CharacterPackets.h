@@ -146,6 +146,7 @@ namespace WorldPackets
                 uint32 LastPlayedTime    = 0;
                 uint16 SpecID            = 0;
                 uint32 Unknown703        = 0;
+                uint32 Unknown735        = 0xFFFFFFFF;
 
                 struct PetInfo
                 {
@@ -167,9 +168,9 @@ namespace WorldPackets
                 std::array<VisualItemInfo, 23> VisualItems = { };
             };
 
-            struct RestrictedFactionChangeRuleInfo
+            struct EnabledRacesInfo
             {
-                RestrictedFactionChangeRuleInfo(int32 mask, uint8 race)
+                EnabledRacesInfo(int32 mask, uint8 race)
                     : Mask(mask), Race(race) { }
 
                 int32 Mask = 0;
@@ -185,12 +186,12 @@ namespace WorldPackets
             bool IsDemonHunterCreationAllowed = false; ///< used for demon hunter early access
             bool HasDemonHunterOnRealm  = false;
             bool HasLevel70OnRealm      = false;
-            bool Unknown7x              = false;
+            bool AlliedRacesEnabled    = true;
 
             Optional<uint32> DisabledClassesMask;
 
             std::vector<CharacterInfo> Characters; ///< all characters on the list
-            std::vector<RestrictedFactionChangeRuleInfo> FactionChangeRestrictions; ///< @todo: research
+            std::vector<EnabledRacesInfo> enabledRacesInfo; ///< @todo: research
         };
 
         class CreateCharacter final : public ClientPacket
